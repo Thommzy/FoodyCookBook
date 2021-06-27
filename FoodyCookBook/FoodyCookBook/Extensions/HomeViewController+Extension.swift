@@ -9,9 +9,7 @@ import UIKit
 
 extension HomeViewController: FoodProtocols {
     func getFood(food: Food?) {
-        
         if let foodArray = food {
-            print(type(of: foodArray), "saving!!!")
             savedFoodTempContainer = foodArray.meals
             DispatchQueue.main.async { [self] in
                 let meal = foodArray.meals?[0]

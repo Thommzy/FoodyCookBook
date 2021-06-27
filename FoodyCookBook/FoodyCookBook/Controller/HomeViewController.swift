@@ -34,20 +34,14 @@ class HomeViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        DispatchQueue.main.async {
-            if UserDefaults.standard.isFirstLaunch() {
-                // do something on first launch
-                UserDefaults.standard.set(true, forKey: "isHome")
-                print("First!!!")
-            }
-        }
-        
-        print(isHome, isSearch, isSaved, "<<<<<>")
+        UserDefaults.standard.set(true, forKey: "isHome")
         favBtn.isSelected = false
-        if isHome {
+        if isHome && !isSearch && !isSaved {
             setupServerLoader()
         }
-        
+        if !isHome && !isSearch && !isSaved {
+            setupServerLoader()
+        }
         if isSaved {
             favBtn.isHidden = true
         }
@@ -87,7 +81,6 @@ class HomeViewController: UIViewController {
                     print(unwrappedSavedFoodTempContainer, "sknsln")
                     try UserDefaults.standard.setObject(unwrappedSavedFoodTempContainer, forKey: "savedFood")
                     var foodCacheData = try UserDefaults.standard.getObject(forKey: "savedFood", castTo: [Meals?].self)
-                    print(foodCacheData, "sknsln@")
                     foodCacheData += unwrappedSavedFoodTempContainer
                     try UserDefaults.standard.setObject(foodCacheData, forKey: "savedFood")
                     sender.isUserInteractionEnabled = false
