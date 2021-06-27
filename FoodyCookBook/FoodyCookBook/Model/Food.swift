@@ -9,10 +9,10 @@ import Foundation
 
 
 struct Food: Codable {
-    let meals: [Meals?]
+    let meals: [Meals?]?
 }
 
-struct Meals: Codable {
+struct Meals: Codable, Hashable {
     let idMeal: String?
     let strMeal: String?
     let strCategory: String?

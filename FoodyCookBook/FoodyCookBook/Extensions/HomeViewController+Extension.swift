@@ -9,9 +9,12 @@ import UIKit
 
 extension HomeViewController: FoodProtocols {
     func getFood(food: Food?) {
+        
         if let foodArray = food {
+            print(type(of: foodArray), "saving!!!")
+            savedFoodTempContainer = foodArray.meals
             DispatchQueue.main.async { [self] in
-                let meal = foodArray.meals[0]
+                let meal = foodArray.meals?[0]
                 IngredientArray(meal: meal)
                 mealLbl.text = meal?.strMeal
                 instructionsLbl.text = meal?.strInstructions
@@ -25,6 +28,8 @@ extension HomeViewController: FoodProtocols {
         }
     }
 }
+
+
 
 //MARK:- Ingredient Array
 extension HomeViewController {
@@ -88,6 +93,24 @@ extension HomeViewController {
                 self.view.updateConstraints()
                 self.view.layoutIfNeeded()
             }
+        }
+    }
+}
+
+extension HomeViewController {
+    func setupSearchDetails() {
+        if let detailMeal = detailMeal {
+            let meal = detailMeal
+            savedFoodTempContainer?.append(meal)
+            IngredientArray(meal: meal)
+            mealLbl.text = meal.strMeal
+            instructionsLbl.text = meal.strInstructions
+            categoryLbl.text = meal.strCategory
+            countryLbl.text = meal.strArea
+            let url = meal.strMealThumb
+            let fileUrl = URL(string: url!)!
+            imageView.downloaded(from: fileUrl)
+            imageView.layer.cornerRadius = 20
         }
     }
 }

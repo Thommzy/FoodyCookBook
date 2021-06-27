@@ -10,8 +10,8 @@ import UIKit
 class SearchViewController: UIViewController, SearchFoodProtocols {
     func getFood(food: Food?) {
         DispatchQueue.main.async { [self] in
-            print("way!!!", food)
             searchFoodArray = food?.meals ?? [Meals]()
+            loadingLblParentView.isHidden = true
             searchResultTableView.reloadData()
         }
     }
@@ -19,22 +19,39 @@ class SearchViewController: UIViewController, SearchFoodProtocols {
     @IBOutlet weak var textFieldParentView: UIView!
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var searchResultTableView: UITableView!
+    @IBOutlet weak var loadingLblParentView: UIView!
+    
+    
+    let isHome = UserDefaults.standard.bool(forKey: "isHome")
+    let isSearch = UserDefaults.standard.bool(forKey: "isSearch")
+    let isSaved = UserDefaults.standard.bool(forKey: "isSaved")
     
     var searchFoodArray: [Meals?] = []
+    var backupSearchFoodArray: [Meals?] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupTextFieldParentView()
         setupSearchResultTableView()
-        
-        setupServerLoader()
+        setupServerLoader(text: "")
     }
     
-    func setupServerLoader(){
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        print(isHome, isSearch, isSaved, "<<<<<>")
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+    
+    func setupServerLoader(text: String){
         let foodLoader = DataService()
         foodLoader.searchDelegate = self
-        foodLoader.loadSearchData(query: "")
+        foodLoader.loadSearchData(query: text)
     }
     
     func setupSearchResultTableView() {
@@ -51,10 +68,17 @@ class SearchViewController: UIViewController, SearchFoodProtocols {
         bar.tintColor = .label
         bar.sizeToFit()
         textField.inputAccessoryView = bar
+        textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
     }
     
     @objc func doneTapped() {
         view.endEditing(true)
+    }
+    
+    @objc func textFieldDidChange(_ textField: UITextField) {
+        loadingLblParentView.isHidden = false
+        guard let text = textField.text?.lowercased() else { return  }
+        setupServerLoader(text: text)
     }
 }
 
@@ -82,6 +106,16 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        UserDefaults.standard.set(true, forKey: "isSearch")
+        UserDefaults.standard.set(false, forKey: "isSaved")
+        UserDefaults.standard.set(false, forKey: "isHome")
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let detailedVc = storyboard.instantiateViewController(withIdentifier: "HomeViewController") as! HomeViewController
+        detailedVc.detailMeal = searchFoodArray[indexPath.row]
+        self.navigationController?.pushViewController(detailedVc, animated: true)
     }
 }
 
